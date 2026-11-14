@@ -90,6 +90,14 @@ body.dark .empty strong{color:#dce7df}
 @media(max-width:520px){.header-actions{gap:6px}.theme-toggle{padding:7px 9px;font-size:11px}}
 
 
+/* Sunflower preset controls */
+.preset-row{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.preset{flex:1 0 auto;min-width:48px;border:1px solid #46515a;border-radius:8px;background:#252c32;color:#fff;padding:6px 8px;font-size:11px;font-weight:700}
+.preset:hover{border-color:#9aa8b1;background:#30383f}
+.preset.active{background:#e5e9ec;color:#11171b;border-color:#e5e9ec}
+.logo{overflow:hidden;background:#8f563b;border-radius:11px;box-shadow:inset 0 0 0 1px #ffffff30}
+.logo svg{display:block;width:100%;height:100%;image-rendering:pixelated}
+@media(max-width:520px){.preset{min-width:42px;padding:6px 5px;font-size:10px}}
 /* Portfolio-matched permanent dark palette */
 :root{color-scheme:dark;--ink:#ffffff;--muted:#c0c7cc;--line:#343b41;--paper:#1e2328;--wash:#080f13;--green:#dce2e6;--green2:#c4ccd2;--shadow:0 8px 28px rgba(0,0,0,.22)}
 body,body.dark{background:#080f13;color:#ffffff}
@@ -120,7 +128,7 @@ hr{border-top-color:#343b41}
 <div class="shell">
   <header>
     <div class="brand">
-      <div class="logo" aria-hidden="true"></div>
+      <div class="logo" id="sunflowerLogo" aria-hidden="true"></div>
       <div>
         <h1>Pixel Paint by Numbers</h1>
         <p class="subtitle">Turn an image into a numbered colour grid you can print and paint.</p>
@@ -141,8 +149,15 @@ hr{border-top-color:#343b41}
       <div class="field">
         <label for="gridWidth">Grid dimensions</label>
         <div class="dimensions">
-          <div><input id="gridWidth" type="number" min="1" max="128" value="32" aria-label="Grid width"></div>
-          <div><input id="gridHeight" type="number" min="1" max="128" value="32" aria-label="Grid height"></div>
+          <div><input id="gridWidth" type="number" min="1" max="128" value="16" aria-label="Grid width"></div>
+          <div><input id="gridHeight" type="number" min="1" max="128" value="16" aria-label="Grid height"></div>
+        </div>
+        <div class="preset-row" aria-label="Grid size presets">
+          <button type="button" class="preset" data-grid="16">16 × 16</button>
+          <button type="button" class="preset" data-grid="24">24 × 24</button>
+          <button type="button" class="preset active" data-grid="32">32 × 32</button>
+          <button type="button" class="preset" data-grid="48">48 × 48</button>
+          <button type="button" class="preset" data-grid="64">64 × 64</button>
         </div>
         <div class="hint">Width × height, from 1 to 128 cells. The image is fitted inside the grid without stretching.</div>
       </div>
@@ -153,6 +168,14 @@ hr{border-top-color:#343b41}
           <option>24</option><option>32</option><option>48</option><option>64</option>
           <option>128</option><option>256</option>
         </select>
+        <div class="preset-row color-presets" aria-label="Colour count presets">
+          <button type="button" class="preset" data-colors="8">8</button>
+          <button type="button" class="preset active" data-colors="16">16</button>
+          <button type="button" class="preset" data-colors="24">24</button>
+          <button type="button" class="preset" data-colors="32">32</button>
+          <button type="button" class="preset" data-colors="48">48</button>
+          <button type="button" class="preset" data-colors="64">64</button>
+        </div>
         <div class="hint">The most frequently used colour becomes No. 1. The key follows the same order.</div>
       </div>
       <div class="field">
@@ -210,6 +233,18 @@ hr{border-top-color:#343b41}
   const fileInput = $("fileInput"), canvas = $("gridCanvas"), ctx = canvas.getContext("2d");
   let sourceImage = null, sourceName = "", grid = null, palette = [], counts = [], selected = null;
   let gridW = 0, gridH = 0, cellSize = 22;
+
+  // Original 16 × 16 sunflower artwork, used as the ready-to-paint example.
+  const sunflowerColors = ["#28616d","#37946e","#45283c","#4ad19a","#4c94a3","#59322b","#663931","#6abe30","#73b5c3","#8f563b","#99e550","#cbdbfc","#faa871","#fbf236","#ffe8a8","#ffffff"];
+  const sunflowerRows = [
+    "9999999966666666","98ff888888888886","9bfff8cddc88ff86","98bb8cd99dcbbfff",
+    "98888d9669d8bb86","98888d9669d88886","98888cdd99dc8886","9488888cd a c88846".replace(/ /g,"").replace("d a c","dac"),
+    "644888a8a8884456","60444447aa444405","6e044447a47a40e5","634e047a47a40e35",
+    "613eeeaaaaaeee35","6211111111111125","6222222222222225","6666666655555555"
+  ];
+  const sunflowerSvg = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" shape-rendering="crispEdges">' +
+    sunflowerRows.map((row,y)=>Array.from(row).map((v,x)=>'<rect x="'+x+'" y="'+y+'" width="1" height="1" fill="'+sunflowerColors[parseInt(v,16)]+'"/>').join("")).join("") + '</svg>';
+  $("sunflowerLogo").innerHTML = sunflowerSvg;
 
   function status(message, isError=false) {
     $("status").textContent = message;
@@ -384,6 +419,17 @@ hr{border-top-color:#343b41}
     if(x>=0&&x<gridW&&y>=0&&y<gridH){const idx=grid[y*gridW+x];selected=selected===idx?null:idx;render();}
   }
   canvas.addEventListener("click",canvasClick);
+  // Quick presets update the custom fields without taking away manual control.
+  document.querySelectorAll("[data-grid]").forEach(btn => btn.addEventListener("click", () => {
+    const n = Number(btn.dataset.grid);
+    $("gridWidth").value = n; $("gridHeight").value = n;
+    document.querySelectorAll("[data-grid]").forEach(b => b.classList.toggle("active", b === btn));
+  }));
+  document.querySelectorAll("[data-colors]").forEach(btn => btn.addEventListener("click", () => {
+    $("maxColors").value = btn.dataset.colors;
+    document.querySelectorAll("[data-colors]").forEach(b => b.classList.toggle("active", b === btn));
+  }));
+
   $("createBtn").addEventListener("click",makeGrid);
   $("cellSize").addEventListener("change",render);
   $("clearBtn").addEventListener("click",()=>{selected=null;render();});
@@ -438,6 +484,22 @@ hr{border-top-color:#343b41}
   $("blankBtn").addEventListener("click",()=>exportGrid("blank"));
   $("keyBtn").addEventListener("click",exportKey);
   $("csvBtn").addEventListener("click",exportCSV);
+
+  // Load the bundled sunflower immediately so the app opens with a working example.
+  const sunflowerBlob = new Blob([sunflowerSvg], {type:"image/svg+xml"});
+  const sunflowerUrl = URL.createObjectURL(sunflowerBlob);
+  const defaultImage = new Image();
+  defaultImage.onload = () => {
+    sourceImage = defaultImage;
+    sourceName = "sunflower-16x16.svg";
+    $("fileName").textContent = "Default artwork: original 16 × 16 sunflower";
+    URL.revokeObjectURL(sunflowerUrl);
+    makeGrid();
+    status("Ready to paint! This is the original 16 × 16 sunflower. Upload your own image any time.");
+  };
+  defaultImage.onerror = () => { URL.revokeObjectURL(sunflowerUrl); status("Choose an image to get started."); };
+  defaultImage.src = sunflowerUrl;
+
 })();
 </script>
 </body>
