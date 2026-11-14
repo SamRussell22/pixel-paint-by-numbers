@@ -162,12 +162,8 @@ hr{border-top-color:#343b41}
       </div>
       <div class="field">
         <label for="maxColors">Maximum number of colours</label>
-        <select id="maxColors">
-          <option value="8">8</option><option value="16" selected>16</option>
-          <option value="32">32</option><option value="64">64</option>
-          <option value="128">128</option><option value="256">256</option>
-          <option value="0">Original colours (no limit)</option>
-        </select>
+        <input id="maxColors" type="number" min="0" max="256" step="1" value="0" inputmode="numeric" aria-label="Maximum number of colours">
+        <div class="hint">Enter 2–256, or use 0 for original colours (no reduction).</div>
         <div class="preset-row color-presets" aria-label="Colour count presets">
           <button type="button" class="preset" data-colors="8">8</button>
           <button type="button" class="preset active" data-colors="16">16</button>
@@ -272,7 +268,15 @@ hr{border-top-color:#343b41}
       sourceImage = img; sourceName = file.name;
       $("fileName").textContent = file.name;
       URL.revokeObjectURL(url);
-      status("Image loaded. Choose your grid settings and create the grid.");
+      // Start from the image's own pixel dimensions, capped at 128 while preserving its aspect ratio.
+      const scale=Math.min(1,128/Math.max(img.naturalWidth,img.naturalHeight));
+      const suggestedW=Math.max(1,Math.min(128,Math.round(img.naturalWidth*scale)));
+      const suggestedH=Math.max(1,Math.min(128,Math.round(img.naturalHeight*scale)));
+      $("gridWidth").value=suggestedW;
+      $("gridHeight").value=suggestedH;
+      $("maxColors").value=0;
+      syncPresetState();
+      status(`Image loaded. Suggested grid: ${suggestedW} × ${suggestedH}, using original colours.`);
       makeGrid();
     };
     img.onerror = () => { URL.revokeObjectURL(url); status("That image could not be opened. Try a PNG or JPG.", true); };
@@ -329,7 +333,8 @@ hr{border-top-color:#343b41}
     if (!sourceImage) { status("Please choose an image first.", true); return; }
     const w=validInt($("gridWidth"),1,128,32), h=validInt($("gridHeight"),1,128,32);
     $("gridWidth").value=w; $("gridHeight").value=h;
-    const max=Number($("maxColors").value)===0 ? 0 : validInt($("maxColors"),2,256,16);
+    const requestedColors=Number($("maxColors").value);
+    const max=requestedColors===0 ? 0 : validInt($("maxColors"),2,256,0);
     try {
       const data=getResampledPixels(w,h), uniqueMap=new Map(), pixelKeys=[];
       for(let i=0;i<data.length;i+=4){
@@ -439,7 +444,9 @@ hr{border-top-color:#343b41}
     clearTimeout(gridUpdateTimer);
     gridUpdateTimer = setTimeout(() => {
       const w=Number($("gridWidth").value), h=Number($("gridHeight").value);
-      if (Number.isInteger(w) && Number.isInteger(h) && w>=1 && h>=1) makeGrid();
+      const colors=Number($("maxColors").value);
+      if (Number.isInteger(w) && Number.isInteger(h) && w>=1 && h>=1 &&
+          Number.isInteger(colors) && (colors===0 || (colors>=2 && colors<=256))) makeGrid();
     }, 220);
   }
   function syncPresetState() {
@@ -460,7 +467,12 @@ hr{border-top-color:#343b41}
     $(id).addEventListener("input", () => { syncPresetState(); queueGridUpdate(); });
     $(id).addEventListener("change", () => { syncPresetState(); queueGridUpdate(); });
   });
-  $("maxColors").addEventListener("change", () => { syncPresetState(); queueGridUpdate(); });
+  $("maxColors").addEventListener("input", () => { syncPresetState(); queueGridUpdate(); });
+  $("maxColors").addEventListener("change", () => {
+    const n=Number($("maxColors").value);
+    if (n!==0 && (!Number.isInteger(n) || n<2 || n>256)) $("maxColors").value=0;
+    syncPresetState(); queueGridUpdate();
+  });
   $("gridScale").addEventListener("change",render);
   $("clearBtn").addEventListener("click",()=>{selected=null;render();});
   function saveCanvas(c,name){
