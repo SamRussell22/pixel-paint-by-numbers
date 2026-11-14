@@ -166,12 +166,12 @@ hr{border-top-color:#343b41}
         <div class="hint">Enter 2–256, or use 0 for original colours (no reduction).</div>
         <div class="preset-row color-presets" aria-label="Colour count presets">
           <button type="button" class="preset" data-colors="8">8</button>
-          <button type="button" class="preset active" data-colors="16">16</button>
+          <button type="button" class="preset" data-colors="16">16</button>
           <button type="button" class="preset" data-colors="32">32</button>
           <button type="button" class="preset" data-colors="64">64</button>
           <button type="button" class="preset" data-colors="128">128</button>
           <button type="button" class="preset" data-colors="256">256</button>
-          <button type="button" class="preset" data-colors="0">Original</button>
+          <button type="button" class="preset active" data-colors="0">Original</button>
         </div>
         <div class="hint">The most frequently used colour becomes No. 1. Original keeps every distinct colour in the image.</div>
       </div>
@@ -335,6 +335,10 @@ hr{border-top-color:#343b41}
     $("gridWidth").value=w; $("gridHeight").value=h;
     const requestedColors=Number($("maxColors").value);
     const max=requestedColors===0 ? 0 : validInt($("maxColors"),2,256,0);
+    // Keep quick-preset highlights in sync with the actual input values,
+    // including the bundled default image and newly uploaded images.
+    $("maxColors").value=max;
+    syncPresetState();
     try {
       const data=getResampledPixels(w,h), uniqueMap=new Map(), pixelKeys=[];
       for(let i=0;i<data.length;i+=4){
