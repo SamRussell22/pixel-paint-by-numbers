@@ -54,7 +54,7 @@ hr{border:0;border-top:1px solid #edf0ec;margin:17px 0}
 #gridDialogHost{height:calc(100% - 48px);min-height:0}
 #gridDialogHost .grid-scroll{height:100%;max-height:none;min-height:0}
 @media(max-width:600px){.preview-actions{gap:6px;flex-wrap:wrap;justify-content:flex-end}.output-head{align-items:flex-start}.grid-dialog{width:100vw;height:100dvh;padding:8px}}
-.grid-scroll{width:100%;height:auto;max-height:min(80vh,1000px);min-height:0;overflow:auto;border:1px solid #e0e5df;border-radius:0;background-color:#080F13;background-image:none}.grid-scroll.zoomed{background-color:#f1f3f0;background-image:linear-gradient(45deg,#e7eae6 25%,transparent 25%),linear-gradient(-45deg,#e7eae6 25%,transparent 25%),linear-gradient(45deg,transparent 75%,#e7eae6 75%),linear-gradient(-45deg,transparent 75%,#e7eae6 75%);background-size:20px 20px;background-position:0 0,0 10px,10px -10px,-10px 0}
+.grid-scroll{width:100%;height:auto;max-height:none;min-height:0;overflow:hidden;border:1px solid #e0e5df;border-radius:0;background-color:#080F13;background-image:none}.grid-scroll.zoomed{max-height:min(80vh,1000px);overflow:auto;background-color:#f1f3f0;background-image:linear-gradient(45deg,#e7eae6 25%,transparent 25%),linear-gradient(-45deg,#e7eae6 25%,transparent 25%),linear-gradient(45deg,transparent 75%,#e7eae6 75%),linear-gradient(-45deg,transparent 75%,#e7eae6 75%);background-size:20px 20px;background-position:0 0,0 10px,10px -10px,-10px 0}
 #gridCanvas{display:block;background:#fff;max-width:none}
 .below{display:grid;grid-template-columns:minmax(0,1fr);gap:14px;margin-top:14px}
 .key-panel{padding:15px}
@@ -158,7 +158,7 @@ input[type=number],select{background:#151b20;border-color:#46515a;color:#ffffff}
 hr{border-top-color:#343b41}
 .status{color:#c0c7cc}
 .output-head span,.key-head p,.hint,.key-count{color:#c0c7cc}
-.grid-scroll{border-color:#46515a;background-color:#252c32;background-image:linear-gradient(45deg,#30383f 25%,transparent 25%),linear-gradient(-45deg,#30383f 25%,transparent 25%),linear-gradient(45deg,transparent 75%,#30383f 75%),linear-gradient(-45deg,transparent 75%,#30383f 75%)}
+.grid-scroll{border-color:#46515a;background-color:#080f13;background-image:none}
 .key-item{background:#252c32;border-color:#414b53;color:#ffffff}
 .key-item:hover{border-color:#8b969e;background:#30383f}
 .key-item.active{border-color:#d5dce1;background:#39434b}
@@ -254,8 +254,8 @@ header,
       <div class="field">
         <label for="gridScale">Preview scale</label>
         <select id="gridScale">
-          <option value="50">50%</option><option value="75">75%</option><option value="100">100%</option>
-          <option value="125">125%</option><option value="150" selected>150%</option><option value="200">200%</option>
+          <option value="50">50%</option><option value="75">75%</option><option value="100" selected>100%</option>
+          <option value="125">125%</option><option value="150">150%</option><option value="200">200%</option>
         </select>
         <div class="hint">Changes the on-screen preview only. Downloads keep their full resolution.</div>
       </div>
@@ -448,8 +448,8 @@ header,
       palette=used.map(p=>p.rgb); counts=used.map(p=>p.count);
       grid=pixelKeys.map(key=>oldToNew.get(keyToCenter.get(key)));
       gridW=w; gridH=h; selected=null;
-      const largest = Math.max(w,h);
-      $("gridScale").value = largest <= 16 ? "150" : largest <= 32 ? "125" : largest <= 64 ? "75" : "50";
+      // Every new grid starts at 100% and fits the preview width.
+      $("gridScale").value = "100";
       render();
       $("pixelMetric").textContent=(w*h).toLocaleString();
       $("colorMetric").textContent=palette.length.toLocaleString();
@@ -489,13 +489,12 @@ header,
     if(!grid) return;
     const preview=$("gridScroll");
     const zoom=(Number($("gridScale").value)||100)/100;
-    preview.classList.toggle("zoomed",zoom>1.5);
-    // Keep the same cell size when moving the preview into or out of the expanded dialog.
-    // In the editor, fit the grid to the available width; the viewport height follows
-    // the canvas naturally and only becomes scrollable when the artwork is taller.
+    preview.classList.toggle("zoomed",zoom!==1);
+    // 100% always means edge-to-edge width. Lower scales leave checkerboard visible;
+    // higher scales exceed the viewport and enable scrolling.
     if(!gridDialog?.open){
       const fitCellSize=(preview.clientWidth-2)/Math.max(1,gridW);
-      cellSize=Math.max(4,Math.floor(fitCellSize*zoom/1.5));
+      cellSize=Math.max(4,fitCellSize*zoom);
     }
     canvas.style.width="";
     canvas.style.height="";
