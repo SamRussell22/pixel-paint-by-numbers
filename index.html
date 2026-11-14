@@ -237,10 +237,10 @@ hr{border-top-color:#343b41}
   // Original 16 × 16 sunflower artwork, used as the ready-to-paint example.
   const sunflowerColors = ["#28616d","#37946e","#45283c","#4ad19a","#4c94a3","#59322b","#663931","#6abe30","#73b5c3","#8f563b","#99e550","#cbdbfc","#faa871","#fbf236","#ffe8a8","#ffffff"];
   const sunflowerRows = [
-    "9999999966666666","98ff888888888886","9bfff8cddc88ff86","98bb8cd99dcbbfff",
-    "98888d9669d8bb86","98888d9669d88886","98888cdd99dc8886","948888cdac888846",
-    "644888a8a8884456","600444447aa44405","6e044447a47a40e5","63e047a47a40e35",
-    "613eeeaaaaaeee35","6211111111111125","6222222222222225","6666666655555555"
+    "9999999966666666","98ff888888888886","9bfff8cddc88ff86","98bb8cd99dcbfff6",
+    "98888d9669d8bb86","98888d9669d88886","98888cd99dc88886","948888cdac888846",
+    "644888a8a8888445","6044447aa4444405","6e044447a47a40e5","63e04a74a7a40e35",
+    "613eeeaaaaeee315","6211111111111125","6222222222222225","6666666655555555"
   ];
   const sunflowerSvg = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" shape-rendering="crispEdges">' +
     sunflowerRows.map((row,y)=>Array.from(row).map((v,x)=>'<rect x="'+x+'" y="'+y+'" width="1" height="1" fill="'+sunflowerColors[parseInt(v,16)]+'"/>').join("")).join("") + '</svg>';
