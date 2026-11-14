@@ -1,0 +1,398 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#f7f7f4">
+<title>Pixel Paint by Numbers</title>
+<style>
+:root{--ink:#202522;--muted:#66716b;--line:#dfe5df;--paper:#fff;--wash:#f4f6f2;--green:#287653;--green2:#1f6243;--shadow:0 8px 28px rgba(28,45,34,.08)}
+*{box-sizing:border-box}
+body{margin:0;background:#f7f8f5;color:var(--ink);font:15px/1.45 system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif}
+button,input,select{font:inherit}
+button{cursor:pointer}
+.shell{max-width:1440px;margin:0 auto;padding:24px}
+header{display:flex;align-items:center;justify-content:space-between;gap:18px;margin-bottom:20px}
+.brand{display:flex;align-items:center;gap:13px}
+.logo{width:44px;height:44px;border-radius:13px;background:linear-gradient(135deg,#f3c56c 0 25%,#e58a68 25% 50%,#7eb99a 50% 75%,#7e9fce 75%);box-shadow:inset 0 0 0 1px #00000012}
+h1{font-size:clamp(22px,3vw,30px);line-height:1.15;margin:0;font-weight:760;letter-spacing:-.7px}
+.subtitle{margin:4px 0 0;color:var(--muted);font-size:13px}
+.pill{background:#eaf2ec;color:#286445;border:1px solid #d6e6d9;border-radius:99px;padding:6px 11px;font-size:12px;font-weight:650;white-space:nowrap}
+.layout{display:grid;grid-template-columns:minmax(270px,330px) minmax(0,1fr);gap:18px;align-items:start}
+.panel{background:var(--paper);border:1px solid var(--line);border-radius:18px;box-shadow:var(--shadow)}
+.controls{padding:18px;position:sticky;top:14px}
+.section-title{font-size:14px;font-weight:750;margin:0 0 12px}
+.field{margin:0 0 14px}
+.field label{display:block;font-size:12px;font-weight:700;color:#47534c;margin-bottom:6px}
+input[type=file]{width:100%;font-size:12px;border:1px dashed #b9c6bc;background:#fbfcfa;padding:11px;border-radius:10px}
+input[type=number],select{width:100%;border:1px solid #d5ddd6;border-radius:9px;padding:9px 10px;background:#fff;color:var(--ink)}
+.dimensions{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.row-field{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.hint{font-size:11px;color:var(--muted);margin-top:5px}
+.primary,.secondary,.export{border:0;border-radius:10px;padding:10px 13px;font-weight:700;transition:.15s}
+.primary{background:var(--green);color:white;width:100%;margin:2px 0 12px}
+.primary:hover{background:var(--green2)}
+.secondary{background:#eef3ee;color:#294b37;border:1px solid #dce7dd}
+.secondary:hover,.export:hover{filter:brightness(.97)}
+.actions{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.export{background:#fff;border:1px solid #d9e1da;color:#33433a;font-size:12px;padding:9px 8px}
+hr{border:0;border-top:1px solid #edf0ec;margin:17px 0}
+.status{font-size:12px;color:var(--muted);min-height:34px;margin-top:12px}
+.work{min-width:0}
+.metrics{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:14px}
+.metric{padding:13px 15px}
+.metric small{display:block;color:var(--muted);font-size:11px;font-weight:650}
+.metric strong{display:block;font-size:22px;line-height:1.3;margin-top:3px;letter-spacing:-.4px}
+.output{padding:16px}
+.output-head{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:12px}
+.output-head h2{font-size:16px;margin:0}
+.output-head span{font-size:12px;color:var(--muted)}
+.grid-scroll{width:100%;height:min(66vh,760px);min-height:330px;overflow:auto;border:1px solid #e0e5df;border-radius:12px;background-color:#f1f3f0;background-image:linear-gradient(45deg,#e7eae6 25%,transparent 25%),linear-gradient(-45deg,#e7eae6 25%,transparent 25%),linear-gradient(45deg,transparent 75%,#e7eae6 75%),linear-gradient(-45deg,transparent 75%,#e7eae6 75%);background-size:20px 20px;background-position:0 0,0 10px,10px -10px,-10px 0}
+#gridCanvas{display:block;background:#fff;max-width:none}
+.below{display:grid;grid-template-columns:minmax(0,1fr);gap:14px;margin-top:14px}
+.key-panel{padding:15px}
+.key-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:10px}
+.key-head h2{font-size:15px;margin:0}
+.key-head p{font-size:11px;color:var(--muted);margin:0}
+.key-list{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:7px;max-height:300px;overflow:auto;padding:2px}
+.key-item{display:flex;align-items:center;gap:9px;text-align:left;border:1px solid #e1e6e1;border-radius:9px;background:#fff;padding:7px 9px;min-width:0;color:var(--ink)}
+.key-item:hover{border-color:#8eaa97;background:#fbfdfb}
+.key-item.active{border:2px solid #287653;padding:6px 8px;background:#f0f7f1}
+.swatch{width:23px;height:23px;flex:0 0 23px;border:1px solid #0002;border-radius:6px}
+.key-copy{min-width:0;display:flex;flex-direction:column;line-height:1.25}
+.key-name{font-size:12px;font-weight:750}
+.key-count{font-size:10px;color:var(--muted)}
+.empty{padding:45px 20px;text-align:center;color:var(--muted)}
+.empty-icon{font-size:36px;margin-bottom:8px}
+.empty strong{display:block;color:#39463e;margin-bottom:4px}
+.footer-note{font-size:11px;color:var(--muted);text-align:center;margin:16px 0 0}
+@media(max-width:900px){.shell{padding:15px}.layout{grid-template-columns:1fr}.controls{position:static}.metrics{grid-template-columns:repeat(3,1fr)}.grid-scroll{height:56vh}}
+@media(max-width:520px){.shell{padding:10px}.pill{display:none}.metrics{gap:6px}.metric{padding:10px}.metric strong{font-size:18px}.output{padding:10px}.key-list{grid-template-columns:1fr 1fr}.key-item{padding:6px}.key-count{font-size:9px}}
+</style>
+</head>
+<body>
+<div class="shell">
+  <header>
+    <div class="brand">
+      <div class="logo" aria-hidden="true"></div>
+      <div>
+        <h1>Pixel Paint by Numbers</h1>
+        <p class="subtitle">Turn an image into a numbered colour grid you can print and paint.</p>
+      </div>
+    </div>
+    <div class="pill">Free browser tool · No account needed</div>
+  </header>
+
+  <div class="layout">
+    <aside class="panel controls">
+      <h2 class="section-title">1. Choose your image</h2>
+      <div class="field">
+        <input id="fileInput" type="file" accept="image/png,image/jpeg,image/webp,image/gif,image/bmp">
+        <div class="hint" id="fileName">PNG, JPG, WebP, GIF or BMP. Your image stays on your device.</div>
+      </div>
+      <hr>
+      <h2 class="section-title">2. Set your grid</h2>
+      <div class="field">
+        <label for="gridWidth">Grid dimensions</label>
+        <div class="dimensions">
+          <div><input id="gridWidth" type="number" min="1" max="128" value="32" aria-label="Grid width"></div>
+          <div><input id="gridHeight" type="number" min="1" max="128" value="32" aria-label="Grid height"></div>
+        </div>
+        <div class="hint">Width × height, from 1 to 128 cells. The image is fitted inside the grid without stretching.</div>
+      </div>
+      <div class="field">
+        <label for="maxColors">Maximum number of colours</label>
+        <select id="maxColors">
+          <option>4</option><option>8</option><option>12</option><option selected>16</option>
+          <option>24</option><option>32</option><option>48</option><option>64</option>
+          <option>128</option><option>256</option>
+        </select>
+        <div class="hint">The most frequently used colour becomes No. 1. The key follows the same order.</div>
+      </div>
+      <div class="field">
+        <label for="cellSize">Grid preview cell size</label>
+        <select id="cellSize"><option value="16">Small</option><option value="22" selected>Medium</option><option value="30">Large</option><option value="38">Extra large</option></select>
+      </div>
+      <button class="primary" id="createBtn">Create numbered grid</button>
+      <hr>
+      <h2 class="section-title">3. Export your artwork</h2>
+      <div class="actions">
+        <button class="export" id="numberedBtn">Numbered grid PNG</button>
+        <button class="export" id="blankBtn">Blank grid PNG</button>
+        <button class="export" id="keyBtn">Colour key PNG</button>
+        <button class="export" id="csvBtn">Export CSV</button>
+      </div>
+      <div class="status" id="status" role="status">Choose an image to get started.</div>
+    </aside>
+
+    <main class="work">
+      <div class="metrics">
+        <div class="panel metric"><small>GRID CELLS</small><strong id="pixelMetric">—</strong></div>
+        <div class="panel metric"><small>COLOURS</small><strong id="colorMetric">—</strong></div>
+        <div class="panel metric"><small>GRID SIZE</small><strong id="sizeMetric">—</strong></div>
+      </div>
+      <section class="panel output">
+        <div class="output-head">
+          <h2>Your numbered grid</h2>
+          <span id="gridHelp">Click a cell to highlight its colour</span>
+        </div>
+        <div class="grid-scroll" id="gridScroll">
+          <div class="empty" id="emptyState">
+            <div class="empty-icon">▦</div>
+            <strong>Your grid will appear here</strong>
+            Upload an image, choose your settings, then create your grid.
+          </div>
+          <canvas id="gridCanvas" hidden></canvas>
+        </div>
+      </section>
+      <section class="panel key-panel below">
+        <div class="key-head">
+          <div><h2>Colour key</h2><p>Click a colour to highlight every matching cell.</p></div>
+          <button class="secondary" id="clearBtn">Clear highlight</button>
+        </div>
+        <div class="key-list" id="keyList"><div class="hint">Your colour list will appear here after you create a grid.</div></div>
+      </section>
+    </main>
+  </div>
+  <p class="footer-note">Images are processed locally in your browser. They are not sent to or stored by this website.</p>
+</div>
+
+<script>
+(() => {
+  "use strict";
+  const $ = id => document.getElementById(id);
+  const fileInput = $("fileInput"), canvas = $("gridCanvas"), ctx = canvas.getContext("2d");
+  let sourceImage = null, sourceName = "", grid = null, palette = [], counts = [], selected = null;
+  let gridW = 0, gridH = 0, cellSize = 22;
+
+  function status(message, isError=false) {
+    $("status").textContent = message;
+    $("status").style.color = isError ? "#b3261e" : "";
+  }
+  function validInt(el, min, max, fallback) {
+    const n = Number.parseInt(el.value, 10);
+    return Number.isFinite(n) ? Math.max(min, Math.min(max, n)) : fallback;
+  }
+  function rgbHex(c) { return "#" + c.map(v => Math.round(v).toString(16).padStart(2,"0")).join("").toUpperCase(); }
+  function luminance(c) { return .299*c[0] + .587*c[1] + .114*c[2]; }
+
+  fileInput.addEventListener("change", () => {
+    const file = fileInput.files && fileInput.files[0];
+    if (!file) return;
+    if (!file.type.startsWith("image/")) { status("Please choose an image file.", true); return; }
+    const url = URL.createObjectURL(file);
+    const img = new Image();
+    img.onload = () => {
+      sourceImage = img; sourceName = file.name;
+      $("fileName").textContent = file.name;
+      URL.revokeObjectURL(url);
+      status("Image loaded. Choose your grid settings and create the grid.");
+      makeGrid();
+    };
+    img.onerror = () => { URL.revokeObjectURL(url); status("That image could not be opened. Try a PNG or JPG.", true); };
+    img.src = url;
+  });
+
+  function getResampledPixels(w,h) {
+    const off = document.createElement("canvas");
+    off.width = w; off.height = h;
+    const c = off.getContext("2d", {willReadFrequently:true});
+    c.fillStyle = "#ffffff"; c.fillRect(0,0,w,h);
+    const scale = Math.min(w/sourceImage.naturalWidth, h/sourceImage.naturalHeight);
+    const dw = Math.max(1, Math.round(sourceImage.naturalWidth*scale));
+    const dh = Math.max(1, Math.round(sourceImage.naturalHeight*scale));
+    const dx = Math.floor((w-dw)/2), dy = Math.floor((h-dh)/2);
+    c.imageSmoothingEnabled = false;
+    c.drawImage(sourceImage, dx, dy, dw, dh);
+    return c.getImageData(0,0,w,h).data;
+  }
+
+  function medianCut(unique, maxColors) {
+    if (unique.length <= maxColors) return unique.map(p => [p.r,p.g,p.b]);
+    let boxes = [unique.slice()];
+    const rangeOf = (box, ch) => {
+      let lo=255, hi=0;
+      for (const p of box) { if(p[ch]<lo)lo=p[ch]; if(p[ch]>hi)hi=p[ch]; }
+      return hi-lo;
+    };
+    while (boxes.length < maxColors) {
+      let best=-1, bestScore=-1, bestChannel="r";
+      for(let i=0;i<boxes.length;i++){
+        const box=boxes[i]; if(box.length<2) continue;
+        const rr=rangeOf(box,"r"), gg=rangeOf(box,"g"), bb=rangeOf(box,"b");
+        const ch = rr>=gg && rr>=bb ? "r" : (gg>=bb ? "g" : "b");
+        const total=box.reduce((s,p)=>s+p.count,0);
+        const score=Math.max(rr,gg,bb)*Math.sqrt(total);
+        if(score>bestScore){bestScore=score;best=i;bestChannel=ch;}
+      }
+      if(best<0) break;
+      const box=boxes.splice(best,1)[0].sort((a,b)=>a[bestChannel]-b[bestChannel]);
+      const total=box.reduce((s,p)=>s+p.count,0);
+      let acc=0, split=1;
+      for(let i=0;i<box.length-1;i++){acc+=box[i].count;if(acc>=total/2){split=i+1;break;}}
+      boxes.push(box.slice(0,split),box.slice(split));
+    }
+    return boxes.map(box => {
+      let r=0,g=0,b=0,n=0;
+      for(const p of box){r+=p.r*p.count;g+=p.g*p.count;b+=p.b*p.count;n+=p.count;}
+      return [Math.round(r/n),Math.round(g/n),Math.round(b/n)];
+    });
+  }
+
+  function makeGrid() {
+    if (!sourceImage) { status("Please choose an image first.", true); return; }
+    const w=validInt($("gridWidth"),1,128,32), h=validInt($("gridHeight"),1,128,32);
+    $("gridWidth").value=w; $("gridHeight").value=h;
+    const max=validInt($("maxColors"),2,256,16);
+    try {
+      const data=getResampledPixels(w,h), uniqueMap=new Map(), pixelKeys=[];
+      for(let i=0;i<data.length;i+=4){
+        const key=data[i]+","+data[i+1]+","+data[i+2];
+        pixelKeys.push(key);
+        const old=uniqueMap.get(key);
+        if(old) old.count++;
+        else uniqueMap.set(key,{r:data[i],g:data[i+1],b:data[i+2],count:1,key});
+      }
+      const unique=Array.from(uniqueMap.values());
+      const centers=medianCut(unique,max);
+      const centerCounts=centers.map(()=>0), keyToCenter=new Map();
+      for(const p of unique){
+        let best=0, bestDist=Infinity;
+        for(let i=0;i<centers.length;i++){
+          const c=centers[i], dr=p.r-c[0], dg=p.g-c[1], db=p.b-c[2];
+          const d=dr*dr+dg*dg+db*db;
+          if(d<bestDist){bestDist=d;best=i;}
+        }
+        keyToCenter.set(p.key,best);
+        centerCounts[best]+=p.count;
+      }
+      const used=centers.map((c,i)=>({rgb:c,count:centerCounts[i],old:i})).filter(x=>x.count>0);
+      used.sort((a,b)=>b.count-a.count || a.rgb[0]-b.rgb[0] || a.rgb[1]-b.rgb[1] || a.rgb[2]-b.rgb[2]);
+      const oldToNew=new Map();
+      used.forEach((p,i)=>oldToNew.set(p.old,i));
+      palette=used.map(p=>p.rgb); counts=used.map(p=>p.count);
+      grid=pixelKeys.map(key=>oldToNew.get(keyToCenter.get(key)));
+      gridW=w; gridH=h; selected=null;
+      render();
+      $("pixelMetric").textContent=(w*h).toLocaleString();
+      $("colorMetric").textContent=palette.length.toLocaleString();
+      $("sizeMetric").textContent=w+" × "+h;
+      status(`Created ${w} × ${h} grid with ${palette.length} colours. Most common colour is No. 1.`);
+    } catch(err) {
+      console.error(err); status("Could not create the grid. Try a smaller grid size.",true);
+    }
+  }
+
+  function drawGrid(target, mode, cell) {
+    const c=target.getContext("2d");
+    target.width=gridW*cell; target.height=gridH*cell;
+    c.fillStyle="#ffffff"; c.fillRect(0,0,target.width,target.height);
+    const fontSize=Math.max(9,Math.min(17,Math.floor(cell*.38)));
+    c.textAlign="center"; c.textBaseline="middle";
+    for(let y=0;y<gridH;y++) for(let x=0;x<gridW;x++){
+      const idx=grid[y*gridW+x], px=x*cell, py=y*cell;
+      if(mode==="numbered"){
+        const rgb=palette[idx];
+        const faded=selected!==null && selected!==idx;
+        c.fillStyle=faded ? "#e9e9e9" : rgbHex(rgb);
+        c.fillRect(px,py,cell,cell);
+        const label=String(idx+1);
+        c.font=`600 ${fontSize}px Arial, sans-serif`;
+        if(c.measureText(label).width < cell-4){
+          c.fillStyle=faded ? "#aaaaaa" : (luminance(rgb)>145 ? "#151515" : "#ffffff");
+          c.fillText(label,px+cell/2,py+cell/2+.5);
+        }
+      }
+      c.strokeStyle="#858b86"; c.lineWidth=1;
+      c.strokeRect(px+.5,py+.5,cell-1,cell-1);
+    }
+  }
+
+  function render() {
+    if(!grid) return;
+    cellSize=Number($("cellSize").value)||22;
+    $("emptyState").hidden=true; canvas.hidden=false;
+    drawGrid(canvas,"numbered",cellSize);
+    renderKey();
+  }
+  function renderKey() {
+    const list=$("keyList"); list.innerHTML="";
+    palette.forEach((rgb,i)=>{
+      const btn=document.createElement("button");
+      btn.type="button"; btn.className="key-item"+(selected===i?" active":"");
+      btn.setAttribute("aria-pressed",selected===i?"true":"false");
+      const sw=document.createElement("span"); sw.className="swatch"; sw.style.background=rgbHex(rgb);
+      const copy=document.createElement("span"); copy.className="key-copy";
+      const name=document.createElement("span"); name.className="key-name"; name.textContent=`No. ${i+1} · ${rgbHex(rgb)}`;
+      const count=document.createElement("span"); count.className="key-count"; count.textContent=`${counts[i].toLocaleString()} pixels · ${(counts[i]/(gridW*gridH)*100).toFixed(1)}%`;
+      copy.append(name,count); btn.append(sw,copy);
+      btn.addEventListener("click",()=>{selected=selected===i?null:i;render();});
+      list.append(btn);
+    });
+  }
+  function canvasClick(e) {
+    if(!grid) return;
+    const rect=canvas.getBoundingClientRect();
+    const x=Math.floor((e.clientX-rect.left)*(canvas.width/rect.width)/cellSize);
+    const y=Math.floor((e.clientY-rect.top)*(canvas.height/rect.height)/cellSize);
+    if(x>=0&&x<gridW&&y>=0&&y<gridH){const idx=grid[y*gridW+x];selected=selected===idx?null:idx;render();}
+  }
+  canvas.addEventListener("click",canvasClick);
+  $("createBtn").addEventListener("click",makeGrid);
+  $("cellSize").addEventListener("change",render);
+  $("clearBtn").addEventListener("click",()=>{selected=null;render();});
+  function saveCanvas(c,name){
+    c.toBlob(blob=>{
+      if(!blob){status("The browser could not create that PNG.",true);return;}
+      const url=URL.createObjectURL(blob), a=document.createElement("a");
+      a.href=url;a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(url),1500);
+      status(`Exported ${name}`);
+    },"image/png");
+  }
+  function exportGrid(mode){
+    if(!grid){status("Create a grid before exporting.",true);return;}
+    const out=document.createElement("canvas");
+    drawGrid(out,mode,40);
+    saveCanvas(out,mode==="numbered"?"numbered-grid.png":"blank-grid.png");
+  }
+  function exportKey(){
+    if(!grid){status("Create a grid before exporting.",true);return;}
+    const rowH=44, width=560, maxRowsPerPage=600;
+    const pages=Math.ceil(palette.length/maxRowsPerPage);
+    for(let page=0;page<pages;page++){
+      const start=page*maxRowsPerPage, end=Math.min(palette.length,start+maxRowsPerPage);
+      const out=document.createElement("canvas");out.width=width;out.height=Math.max(80,(end-start)*rowH+30);
+      const c=out.getContext("2d");c.fillStyle="#fff";c.fillRect(0,0,out.width,out.height);
+      c.fillStyle="#202522";c.font="bold 20px Arial";c.fillText("Pixel Paint by Numbers — Colour key",18,25);
+      c.font="14px Arial";
+      for(let i=start;i<end;i++){
+        const y=42+(i-start)*rowH;
+        c.fillStyle=rgbHex(palette[i]);c.fillRect(18,y,34,30);
+        c.strokeStyle="#555";c.strokeRect(18,y,34,30);
+        c.fillStyle="#202522";c.fillText(`No. ${i+1}   ${rgbHex(palette[i])}   —   ${counts[i].toLocaleString()} pixels`,68,y+20);
+      }
+      saveCanvas(out,pages===1?"colour-key.png":`colour-key-page-${page+1}.png`);
+    }
+    status(pages>1?`Exported colour key in ${pages} PNG pages.`:"Exported colour-key.png");
+  }
+  function exportCSV(){
+    if(!grid){status("Create a grid before exporting.",true);return;}
+    const rows=[["Number","Hex colour","Red","Green","Blue","Pixel count"]];
+    palette.forEach((rgb,i)=>rows.push([i+1,rgbHex(rgb),...rgb,counts[i]]));
+    rows.push([]);
+    rows.push(["Grid cells (top to bottom; values match colour numbers)"]);
+    for(let y=0;y<gridH;y++)rows.push(grid.slice(y*gridW,(y+1)*gridW).map(i=>i+1));
+    const csv=rows.map(row=>row.map(v=>`"${String(v??"").replace(/"/g,'""')}"`).join(",")).join("\r\n");
+    const blob=new Blob(["\uFEFF"+csv],{type:"text/csv;charset=utf-8"});
+    const url=URL.createObjectURL(blob),a=document.createElement("a");
+    a.href=url;a.download="paint-by-numbers.csv";a.click();setTimeout(()=>URL.revokeObjectURL(url),1500);
+    status("Exported paint-by-numbers.csv");
+  }
+  $("numberedBtn").addEventListener("click",()=>exportGrid("numbered"));
+  $("blankBtn").addEventListener("click",()=>exportGrid("blank"));
+  $("keyBtn").addEventListener("click",exportKey);
+  $("csvBtn").addEventListener("click",exportCSV);
+})();
+</script>
+</body>
+</html>
