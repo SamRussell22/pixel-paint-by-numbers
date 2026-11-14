@@ -400,18 +400,17 @@ hr{border-top-color:#343b41}
     }
   }
 
-  function applyCanvasScale() {
-    if (!grid || !canvas.width || !canvas.height) return;
-    const scale = (Number($("gridScale").value) || 100) / 100;
-    canvas.style.width = Math.round(canvas.width * scale) + "px";
-    canvas.style.height = Math.round(canvas.height * scale) + "px";
-  }
   function render() {
     if(!grid) return;
-    cellSize=Number($("cellSize").value)||30;
+    const baseCellSize=Number($("cellSize").value)||30;
+    const zoom=(Number($("gridScale").value)||100)/100;
+    // Redraw at the requested pixel size instead of stretching a smaller canvas.
+    // This keeps cell borders and number glyphs crisp at every zoom level.
+    cellSize=Math.max(8,Math.round(baseCellSize*zoom));
+    canvas.style.width="";
+    canvas.style.height="";
     $("emptyState").hidden=true; canvas.hidden=false;
     drawGrid(canvas,"numbered",cellSize);
-    applyCanvasScale();
     renderKey();
   }
   function renderKey() {
@@ -450,7 +449,7 @@ hr{border-top-color:#343b41}
 
   $("createBtn").addEventListener("click",makeGrid);
   $("cellSize").addEventListener("change",render);
-  $("gridScale").addEventListener("change",applyCanvasScale);
+  $("gridScale").addEventListener("change",render);
   $("clearBtn").addEventListener("click",()=>{selected=null;render();});
   function saveCanvas(c,name){
     c.toBlob(blob=>{
