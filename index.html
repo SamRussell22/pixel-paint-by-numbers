@@ -179,8 +179,16 @@ hr{border-top-color:#343b41}
         <div class="hint">The most frequently used colour becomes No. 1. The key follows the same order.</div>
       </div>
       <div class="field">
-        <label for="cellSize">Grid preview cell size</label>
-        <select id="cellSize"><option value="16">Small</option><option value="22" selected>Medium</option><option value="30">Large</option><option value="38">Extra large</option></select>
+        <label for="cellSize">Grid cell size</label>
+        <select id="cellSize"><option value="16">Small</option><option value="22">Medium</option><option value="30" selected>Large</option><option value="38">Extra large</option></select>
+      </div>
+      <div class="field">
+        <label for="gridScale">Preview scale</label>
+        <select id="gridScale">
+          <option value="50">50%</option><option value="75">75%</option><option value="100">100%</option>
+          <option value="125">125%</option><option value="150" selected>150%</option><option value="200">200%</option>
+        </select>
+        <div class="hint">Changes the on-screen preview only. Downloads keep their full resolution.</div>
       </div>
       <button class="primary" id="createBtn">Create numbered grid</button>
       <hr>
@@ -354,6 +362,8 @@ hr{border-top-color:#343b41}
       palette=used.map(p=>p.rgb); counts=used.map(p=>p.count);
       grid=pixelKeys.map(key=>oldToNew.get(keyToCenter.get(key)));
       gridW=w; gridH=h; selected=null;
+      const largest = Math.max(w,h);
+      $("gridScale").value = largest <= 16 ? "150" : largest <= 32 ? "125" : largest <= 64 ? "75" : "50";
       render();
       $("pixelMetric").textContent=(w*h).toLocaleString();
       $("colorMetric").textContent=palette.length.toLocaleString();
@@ -389,11 +399,18 @@ hr{border-top-color:#343b41}
     }
   }
 
+  function applyCanvasScale() {
+    if (!grid || !canvas.width || !canvas.height) return;
+    const scale = (Number($("gridScale").value) || 100) / 100;
+    canvas.style.width = Math.round(canvas.width * scale) + "px";
+    canvas.style.height = Math.round(canvas.height * scale) + "px";
+  }
   function render() {
     if(!grid) return;
-    cellSize=Number($("cellSize").value)||22;
+    cellSize=Number($("cellSize").value)||30;
     $("emptyState").hidden=true; canvas.hidden=false;
     drawGrid(canvas,"numbered",cellSize);
+    applyCanvasScale();
     renderKey();
   }
   function renderKey() {
@@ -432,6 +449,7 @@ hr{border-top-color:#343b41}
 
   $("createBtn").addEventListener("click",makeGrid);
   $("cellSize").addEventListener("change",render);
+  $("gridScale").addEventListener("change",applyCanvasScale);
   $("clearBtn").addEventListener("click",()=>{selected=null;render();});
   function saveCanvas(c,name){
     c.toBlob(blob=>{
