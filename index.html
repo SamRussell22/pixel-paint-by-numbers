@@ -47,7 +47,14 @@ hr{border:0;border-top:1px solid #edf0ec;margin:17px 0}
 .output-head{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:12px}
 .output-head h2{font-size:16px;margin:0}
 .output-head span{font-size:12px;color:var(--muted)}
-.grid-scroll{width:100%;height:min(66vh,760px);min-height:330px;overflow:auto;border:1px solid #e0e5df;border-radius:0;background-color:#080F13;background-image:none}.grid-scroll.zoomed{background-color:#f1f3f0;background-image:linear-gradient(45deg,#e7eae6 25%,transparent 25%),linear-gradient(-45deg,#e7eae6 25%,transparent 25%),linear-gradient(45deg,transparent 75%,#e7eae6 75%),linear-gradient(-45deg,transparent 75%,#e7eae6 75%);background-size:20px 20px;background-position:0 0,0 10px,10px -10px,-10px 0}
+.preview-actions{display:flex;align-items:center;gap:12px}
+.grid-dialog{width:96vw;height:94vh;max-width:none;max-height:none;padding:14px;background:#080f13;color:#fff;border:1px solid #343b41;border-radius:0}
+.grid-dialog::backdrop{background:rgba(0,0,0,.82)}
+.grid-dialog-head{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:10px}
+#gridDialogHost{height:calc(100% - 48px);min-height:0}
+#gridDialogHost .grid-scroll{height:100%;min-height:0}
+@media(max-width:600px){.preview-actions{gap:6px;flex-wrap:wrap;justify-content:flex-end}.output-head{align-items:flex-start}.grid-dialog{width:100vw;height:100dvh;padding:8px}}
+.grid-scroll{width:100%;height:min(80vh,1000px);min-height:420px;overflow:auto;border:1px solid #e0e5df;border-radius:0;background-color:#080F13;background-image:none;scrollbar-gutter:auto}.grid-scroll.zoomed{background-color:#f1f3f0;background-image:linear-gradient(45deg,#e7eae6 25%,transparent 25%),linear-gradient(-45deg,#e7eae6 25%,transparent 25%),linear-gradient(45deg,transparent 75%,#e7eae6 75%),linear-gradient(-45deg,transparent 75%,#e7eae6 75%);background-size:20px 20px;background-position:0 0,0 10px,10px -10px,-10px 0}
 #gridCanvas{display:block;background:#fff;max-width:none}
 .below{display:grid;grid-template-columns:minmax(0,1fr);gap:14px;margin-top:14px}
 .key-panel{padding:15px}
@@ -273,7 +280,7 @@ header,
       <section class="panel output">
         <div class="output-head">
           <h2>Your numbered grid</h2>
-          <span id="gridHelp">Click a cell to highlight its colour</span>
+          <div class="preview-actions"><span id="gridHelp">Click a cell to highlight its colour</span><button class="secondary" id="expandGridBtn" type="button">Expand preview ⤢</button></div>
         </div>
         <div class="grid-scroll" id="gridScroll">
           <div class="empty" id="emptyState">
@@ -284,6 +291,10 @@ header,
           <canvas id="gridCanvas" hidden></canvas>
         </div>
       </section>
+      <dialog id="gridDialog" class="grid-dialog">
+        <div class="grid-dialog-head"><strong>Expanded numbered grid</strong><button class="secondary" id="closeGridBtn" type="button">Close ✕</button></div>
+        <div id="gridDialogHost"></div>
+      </dialog>
       <section class="panel key-panel below">
         <div class="key-head">
           <div><h2>Colour key</h2><p>Click a colour to highlight every matching cell.</p></div>
@@ -482,7 +493,8 @@ header,
     // At the default 150% setting, size square cells to fill the preview width.
     // Higher zoom levels grow beyond the viewport and use its scrollbars.
     const fitCellSize=(preview.clientWidth-2)/Math.max(1,gridW);
-    cellSize=Math.max(4,Math.round(fitCellSize*zoom/1.5));
+    // Round down so the fitted grid never creates a needless horizontal scrollbar.
+    cellSize=Math.max(4,Math.floor(fitCellSize*zoom/1.5));
     canvas.style.width="";
     canvas.style.height="";
     $("emptyState").hidden=true; canvas.hidden=false;
@@ -490,6 +502,21 @@ header,
     renderKey();
   }
   window.addEventListener("resize",render);
+  const gridDialog=$("gridDialog"), gridScroll=$("gridScroll"), gridPlaceholder=document.createComment("grid preview position");
+  $("expandGridBtn").addEventListener("click",()=>{
+    if(!grid) return;
+    gridScroll.parentNode.insertBefore(gridPlaceholder,gridScroll);
+    $("gridDialogHost").appendChild(gridScroll);
+    gridDialog.showModal();
+    render();
+  });
+  $("closeGridBtn").addEventListener("click",()=>gridDialog.close());
+  gridDialog.addEventListener("click",e=>{if(e.target===gridDialog)gridDialog.close();});
+  gridDialog.addEventListener("close",()=>{
+    if(gridPlaceholder.parentNode) gridPlaceholder.parentNode.insertBefore(gridScroll,gridPlaceholder);
+    gridPlaceholder.remove();
+    render();
+  });
   function renderKey() {
     const list=$("keyList"); list.innerHTML="";
     palette.forEach((rgb,i)=>{
