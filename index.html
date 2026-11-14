@@ -154,29 +154,30 @@ hr{border-top-color:#343b41}
         </div>
         <div class="preset-row" aria-label="Grid size presets">
           <button type="button" class="preset active" data-grid="16">16 × 16</button>
-          <button type="button" class="preset" data-grid="24">24 × 24</button>
           <button type="button" class="preset" data-grid="32">32 × 32</button>
-          <button type="button" class="preset" data-grid="48">48 × 48</button>
           <button type="button" class="preset" data-grid="64">64 × 64</button>
+          <button type="button" class="preset" data-grid="128">128 × 128</button>
         </div>
         <div class="hint">Width × height, from 1 to 128 cells. The image is fitted inside the grid without stretching.</div>
       </div>
       <div class="field">
         <label for="maxColors">Maximum number of colours</label>
         <select id="maxColors">
-          <option>4</option><option>8</option><option>12</option><option selected>16</option>
-          <option>24</option><option>32</option><option>48</option><option>64</option>
-          <option>128</option><option>256</option>
+          <option value="8">8</option><option value="16" selected>16</option>
+          <option value="32">32</option><option value="64">64</option>
+          <option value="128">128</option><option value="256">256</option>
+          <option value="0">Original colours (no limit)</option>
         </select>
         <div class="preset-row color-presets" aria-label="Colour count presets">
           <button type="button" class="preset" data-colors="8">8</button>
           <button type="button" class="preset active" data-colors="16">16</button>
-          <button type="button" class="preset" data-colors="24">24</button>
           <button type="button" class="preset" data-colors="32">32</button>
-          <button type="button" class="preset" data-colors="48">48</button>
           <button type="button" class="preset" data-colors="64">64</button>
+          <button type="button" class="preset" data-colors="128">128</button>
+          <button type="button" class="preset" data-colors="256">256</button>
+          <button type="button" class="preset" data-colors="0">Original</button>
         </div>
-        <div class="hint">The most frequently used colour becomes No. 1. The key follows the same order.</div>
+        <div class="hint">The most frequently used colour becomes No. 1. Original keeps every distinct colour in the image.</div>
       </div>
       <div class="field">
         <label for="cellSize">Grid cell size</label>
@@ -332,7 +333,7 @@ hr{border-top-color:#343b41}
     if (!sourceImage) { status("Please choose an image first.", true); return; }
     const w=validInt($("gridWidth"),1,128,32), h=validInt($("gridHeight"),1,128,32);
     $("gridWidth").value=w; $("gridHeight").value=h;
-    const max=validInt($("maxColors"),2,256,16);
+    const max=Number($("maxColors").value)===0 ? 0 : validInt($("maxColors"),2,256,16);
     try {
       const data=getResampledPixels(w,h), uniqueMap=new Map(), pixelKeys=[];
       for(let i=0;i<data.length;i+=4){
@@ -343,7 +344,7 @@ hr{border-top-color:#343b41}
         else uniqueMap.set(key,{r:data[i],g:data[i+1],b:data[i+2],count:1,key});
       }
       const unique=Array.from(uniqueMap.values());
-      const centers=medianCut(unique,max);
+      const centers=max===0 ? unique.map(p=>[p.r,p.g,p.b]) : medianCut(unique,max);
       const centerCounts=centers.map(()=>0), keyToCenter=new Map();
       for(const p of unique){
         let best=0, bestDist=Infinity;
