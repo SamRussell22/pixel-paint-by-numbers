@@ -68,9 +68,30 @@ hr{border:0;border-top:1px solid #edf0ec;margin:17px 0}
 .footer-note{font-size:11px;color:var(--muted);text-align:center;margin:16px 0 0}
 @media(max-width:900px){.shell{padding:15px}.layout{grid-template-columns:1fr}.controls{position:static}.metrics{grid-template-columns:repeat(3,1fr)}.grid-scroll{height:56vh}}
 @media(max-width:520px){.shell{padding:10px}.pill{display:none}.metrics{gap:6px}.metric{padding:10px}.metric strong{font-size:18px}.output{padding:10px}.key-list{grid-template-columns:1fr 1fr}.key-item{padding:6px}.key-count{font-size:9px}}
+
+/* Dark theme */
+body.dark{--ink:#e7ece8;--muted:#a0ada5;--line:#35443b;--paper:#202a24;--wash:#18211c;--green:#438b68;--green2:#367454;--shadow:0 8px 28px rgba(0,0,0,.24);background:#141b17;color:var(--ink);color-scheme:dark}
+body.dark .pill{background:#263b2e;color:#b9e2c7;border-color:#385542}
+body.dark .field label{color:#c3cec6}
+body.dark input[type=file]{background:#1a241e;border-color:#53645a;color:var(--ink)}
+body.dark input[type=number],body.dark select{background:#18211c;border-color:#46564b;color:var(--ink)}
+body.dark .secondary{background:#2a3a30;color:#d7e8dc;border-color:#405447}
+body.dark .export{background:#202b24;border-color:#46564b;color:#dce6df}
+body.dark hr{border-top-color:#354239}
+body.dark .grid-scroll{border-color:#46534a;background-color:#252e28;background-image:linear-gradient(45deg,#303a33 25%,transparent 25%),linear-gradient(-45deg,#303a33 25%,transparent 25%),linear-gradient(45deg,transparent 75%,#303a33 75%),linear-gradient(-45deg,transparent 75%,#303a33 75%)}
+body.dark #gridCanvas{background:#fff}
+body.dark .key-item{background:#1c2720;border-color:#3b4a40;color:var(--ink)}
+body.dark .key-item:hover{border-color:#739680;background:#25342a}
+body.dark .key-item.active{border-color:#62a47b;background:#2b4032}
+body.dark .empty strong{color:#dce7df}
+.theme-toggle{border:1px solid var(--line);border-radius:99px;background:var(--paper);color:var(--ink);padding:8px 12px;font-size:12px;font-weight:700;white-space:nowrap}
+.theme-toggle:hover{border-color:var(--green)}
+.header-actions{display:flex;align-items:center;gap:10px}
+@media(max-width:520px){.header-actions{gap:6px}.theme-toggle{padding:7px 9px;font-size:11px}}
+
 </style>
 </head>
-<body>
+<body class="dark">
 <div class="shell">
   <header>
     <div class="brand">
@@ -80,7 +101,7 @@ hr{border:0;border-top:1px solid #edf0ec;margin:17px 0}
         <p class="subtitle">Turn an image into a numbered colour grid you can print and paint.</p>
       </div>
     </div>
-    <div class="pill">Free browser tool · No account needed</div>
+    <div class="header-actions"><div class="pill">Free browser tool · No account needed</div><button class="theme-toggle" id="themeToggle" type="button" aria-pressed="true">☀️ Light mode</button></div>
   </header>
 
   <div class="layout">
@@ -161,6 +182,14 @@ hr{border:0;border-top:1px solid #edf0ec;margin:17px 0}
 (() => {
   "use strict";
   const $ = id => document.getElementById(id);
+  const themeToggle = $("themeToggle");
+  themeToggle.addEventListener("click", () => {
+    const dark = document.body.classList.toggle("dark");
+    themeToggle.textContent = dark ? "☀️ Light mode" : "🌙 Dark mode";
+    themeToggle.setAttribute("aria-pressed", String(dark));
+    const themeColor = document.querySelector('meta[name="theme-color"]');
+    if (themeColor) themeColor.setAttribute("content", dark ? "#141b17" : "#f7f7f4");
+  });
   const fileInput = $("fileInput"), canvas = $("gridCanvas"), ctx = canvas.getContext("2d");
   let sourceImage = null, sourceName = "", grid = null, palette = [], counts = [], selected = null;
   let gridW = 0, gridH = 0, cellSize = 22;
