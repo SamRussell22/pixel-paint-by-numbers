@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="theme-color" content="#f7f7f4">
+<meta name="theme-color" content="#080f13">
 <title>Pixel Paint by Numbers</title>
 <style>
 :root{--ink:#202522;--muted:#66716b;--line:#dfe5df;--paper:#fff;--wash:#f4f6f2;--green:#287653;--green2:#1f6243;--shadow:0 8px 28px rgba(28,45,34,.08)}
@@ -89,9 +89,34 @@ body.dark .empty strong{color:#dce7df}
 .header-actions{display:flex;align-items:center;gap:10px}
 @media(max-width:520px){.header-actions{gap:6px}.theme-toggle{padding:7px 9px;font-size:11px}}
 
+
+/* Portfolio-matched permanent dark palette */
+:root{color-scheme:dark;--ink:#ffffff;--muted:#c0c7cc;--line:#343b41;--paper:#1e2328;--wash:#080f13;--green:#dce2e6;--green2:#c4ccd2;--shadow:0 8px 28px rgba(0,0,0,.22)}
+body,body.dark{background:#080f13;color:#ffffff}
+body.dark{--ink:#ffffff;--muted:#c0c7cc;--line:#343b41;--paper:#1e2328;--wash:#080f13;--green:#dce2e6;--green2:#c4ccd2}
+.panel{background:#1e2328;border-color:#343b41}
+.pill{background:#252c32;color:#ffffff;border-color:#3a4249}
+.field label{color:#e4e8eb}
+input[type=file]{background:#151b20;border-color:#59636b;color:#ffffff}
+input[type=number],select{background:#151b20;border-color:#46515a;color:#ffffff}
+.primary{background:#e5e9ec;color:#11171b}
+.primary:hover{background:#cbd2d7}
+.secondary{background:#30383f;color:#ffffff;border-color:#46515a}
+.secondary:hover,.export:hover{filter:brightness(1.15)}
+.export{background:#252c32;border-color:#46515a;color:#ffffff}
+hr{border-top-color:#343b41}
+.status{color:#c0c7cc}
+.output-head span,.key-head p,.hint,.key-count{color:#c0c7cc}
+.grid-scroll{border-color:#46515a;background-color:#252c32;background-image:linear-gradient(45deg,#30383f 25%,transparent 25%),linear-gradient(-45deg,#30383f 25%,transparent 25%),linear-gradient(45deg,transparent 75%,#30383f 75%),linear-gradient(-45deg,transparent 75%,#30383f 75%)}
+.key-item{background:#252c32;border-color:#414b53;color:#ffffff}
+.key-item:hover{border-color:#8b969e;background:#30383f}
+.key-item.active{border-color:#d5dce1;background:#39434b}
+.empty,.empty strong{color:#ffffff}
+.footer-note{color:#aeb8bf}
+
 </style>
 </head>
-<body class="dark">
+<body>
 <div class="shell">
   <header>
     <div class="brand">
@@ -101,7 +126,7 @@ body.dark .empty strong{color:#dce7df}
         <p class="subtitle">Turn an image into a numbered colour grid you can print and paint.</p>
       </div>
     </div>
-    <div class="header-actions"><div class="pill">Free browser tool · No account needed</div><button class="theme-toggle" id="themeToggle" type="button" aria-pressed="true">☀️ Light mode</button></div>
+    <div class="pill">Free browser tool · No account needed</div>
   </header>
 
   <div class="layout">
@@ -182,14 +207,6 @@ body.dark .empty strong{color:#dce7df}
 (() => {
   "use strict";
   const $ = id => document.getElementById(id);
-  const themeToggle = $("themeToggle");
-  themeToggle.addEventListener("click", () => {
-    const dark = document.body.classList.toggle("dark");
-    themeToggle.textContent = dark ? "☀️ Light mode" : "🌙 Dark mode";
-    themeToggle.setAttribute("aria-pressed", String(dark));
-    const themeColor = document.querySelector('meta[name="theme-color"]');
-    if (themeColor) themeColor.setAttribute("content", dark ? "#141b17" : "#f7f7f4");
-  });
   const fileInput = $("fileInput"), canvas = $("gridCanvas"), ctx = canvas.getContext("2d");
   let sourceImage = null, sourceName = "", grid = null, palette = [], counts = [], selected = null;
   let gridW = 0, gridH = 0, cellSize = 22;
