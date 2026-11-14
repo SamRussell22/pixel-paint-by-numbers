@@ -476,17 +476,19 @@ header,
 
   function render() {
     if(!grid) return;
-    const baseCellSize=30;
+    const preview=$("gridScroll");
     const zoom=(Number($("gridScale").value)||100)/100;
-    // Redraw at the requested pixel size instead of stretching a smaller canvas.
-    // This keeps cell borders and number glyphs crisp at every zoom level.
-    cellSize=Math.max(8,Math.round(baseCellSize*zoom));
+    // At the default 150% setting, size square cells to fill the preview width.
+    // Higher zoom levels grow beyond the viewport and use its scrollbars.
+    const fitCellSize=(preview.clientWidth-2)/Math.max(1,gridW);
+    cellSize=Math.max(4,Math.round(fitCellSize*zoom/1.5));
     canvas.style.width="";
     canvas.style.height="";
     $("emptyState").hidden=true; canvas.hidden=false;
     drawGrid(canvas,"numbered",cellSize);
     renderKey();
   }
+  window.addEventListener("resize",render);
   function renderKey() {
     const list=$("keyList"); list.innerHTML="";
     palette.forEach((rgb,i)=>{
