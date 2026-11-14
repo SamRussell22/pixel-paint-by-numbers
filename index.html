@@ -48,6 +48,8 @@ hr{border:0;border-top:1px solid #edf0ec;margin:17px 0}
 .output-head h2{font-size:16px;margin:0}
 .output-head span{font-size:12px;color:var(--muted)}
 .preview-actions{display:flex;align-items:center;gap:12px}
+.feature-hint{display:inline-flex;align-items:center;gap:7px;padding:8px 11px;background:#30383f;border:1px solid #687680;color:#fff!important;font-size:12px;font-weight:700;letter-spacing:.1px;line-height:1.2}
+.feature-hint span{color:#f2c66d;font-size:15px;line-height:1}
 .grid-dialog{width:96vw;height:94vh;max-width:none;max-height:none;padding:14px;background:#080f13;color:#fff;border:1px solid #343b41;border-radius:0}
 .grid-dialog::backdrop{background:rgba(0,0,0,.82)}
 .grid-dialog-head{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:10px}
@@ -280,7 +282,7 @@ header,
       <section class="panel output">
         <div class="output-head">
           <h2>Your numbered grid</h2>
-          <div class="preview-actions"><span id="gridHelp">Click a cell to highlight its colour</span><button class="secondary" id="expandGridBtn" type="button">Expand preview ⤢</button></div>
+          <div class="preview-actions"><span id="gridHelp" class="feature-hint"><span aria-hidden="true">✦</span> Click any cell to highlight its colour</span><button class="secondary" id="expandGridBtn" type="button">Expand preview ⤢</button></div>
         </div>
         <div class="grid-scroll" id="gridScroll">
           <div class="empty" id="emptyState">
