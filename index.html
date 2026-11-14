@@ -191,7 +191,7 @@ hr{border-top-color:#343b41}
         </select>
         <div class="hint">Changes the on-screen preview only. Downloads keep their full resolution.</div>
       </div>
-      <button class="primary" id="createBtn">Create numbered grid</button>
+      <div class="hint" id="liveUpdateNote">Your grid updates automatically as you change these settings.</div>
       <hr>
       <h2 class="section-title">3. Export your artwork</h2>
       <div class="actions">
@@ -436,18 +436,35 @@ hr{border-top-color:#343b41}
     if(x>=0&&x<gridW&&y>=0&&y<gridH){const idx=grid[y*gridW+x];selected=selected===idx?null:idx;render();}
   }
   canvas.addEventListener("click",canvasClick);
-  // Quick presets update the custom fields without taking away manual control.
+  // Automatically rebuild the paint-by-numbers grid as settings change.
+  let gridUpdateTimer = null;
+  function queueGridUpdate() {
+    if (!sourceImage) return;
+    clearTimeout(gridUpdateTimer);
+    gridUpdateTimer = setTimeout(() => {
+      const w=Number($("gridWidth").value), h=Number($("gridHeight").value);
+      if (Number.isInteger(w) && Number.isInteger(h) && w>=1 && h>=1) makeGrid();
+    }, 220);
+  }
+  function syncPresetState() {
+    const w=Number($("gridWidth").value), h=Number($("gridHeight").value);
+    document.querySelectorAll("[data-grid]").forEach(b => b.classList.toggle("active", Number(b.dataset.grid)===w && w===h));
+    document.querySelectorAll("[data-colors]").forEach(b => b.classList.toggle("active", Number(b.dataset.colors)===Number($("maxColors").value)));
+  }
   document.querySelectorAll("[data-grid]").forEach(btn => btn.addEventListener("click", () => {
-    const n = Number(btn.dataset.grid);
-    $("gridWidth").value = n; $("gridHeight").value = n;
-    document.querySelectorAll("[data-grid]").forEach(b => b.classList.toggle("active", b === btn));
+    const n=Number(btn.dataset.grid);
+    $("gridWidth").value=n; $("gridHeight").value=n;
+    syncPresetState(); queueGridUpdate();
   }));
   document.querySelectorAll("[data-colors]").forEach(btn => btn.addEventListener("click", () => {
-    $("maxColors").value = btn.dataset.colors;
-    document.querySelectorAll("[data-colors]").forEach(b => b.classList.toggle("active", b === btn));
+    $("maxColors").value=btn.dataset.colors;
+    syncPresetState(); queueGridUpdate();
   }));
-
-  $("createBtn").addEventListener("click",makeGrid);
+  ["gridWidth","gridHeight"].forEach(id => {
+    $(id).addEventListener("input", () => { syncPresetState(); queueGridUpdate(); });
+    $(id).addEventListener("change", () => { syncPresetState(); queueGridUpdate(); });
+  });
+  $("maxColors").addEventListener("change", () => { syncPresetState(); queueGridUpdate(); });
   $("cellSize").addEventListener("change",render);
   $("gridScale").addEventListener("change",render);
   $("clearBtn").addEventListener("click",()=>{selected=null;render();});
