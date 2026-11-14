@@ -98,6 +98,14 @@ body.dark .empty strong{color:#dce7df}
 .logo{overflow:hidden;background:#8f563b;border-radius:11px;box-shadow:inset 0 0 0 1px #ffffff30}
 .logo svg{display:block;width:100%;height:100%;image-rendering:pixelated}
 @media(max-width:520px){.preset{min-width:42px;padding:6px 5px;font-size:10px}}
+/* Keep pixel-art surfaces and logo perfectly square */
+.logo,
+.logo svg,
+.grid-scroll,
+#gridCanvas{
+  border-radius:0 !important;
+}
+
 /* Refined branded header */
 header{
   background:#1e2328;
